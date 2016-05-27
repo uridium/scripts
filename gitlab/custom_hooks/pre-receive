@@ -1,0 +1,43 @@
+#!/bin/bash
+
+echo "===== pre-receive hook ====="
+
+unset BUNDLE_GEMFILE RUBYLIB RUBYOPT GEM_HOME
+export HOME=$(awk -F":" '/git:/{print $6}' /etc/passwd)
+read oldrev newrev refname
+mkdir -p /tmp/$newrev
+git archive --format=tar $newrev | tar -C "/tmp/$newrev" -x
+changed=$(git diff-tree --no-commit-id --name-only --diff-filter='ACMT' -r $newrev | grep ".pp")
+cd /tmp/$newrev
+trap "rm -rf /tmp/$newrev" EXIT
+
+if [[ -n $changed ]]; then
+    for i in "${changed[@]}"; do
+        puppet parser validate ${i} || exit 1
+    done
+    echo "Puppet systax ok"
+
+    for j in "${changed[@]}"; do
+        puppet-lint \
+            --with-filename \
+            --with-context \
+            --fail-on-warnings \
+            --no-80chars-check \
+            --no-2sp_soft_tabs-check \
+            --no-documentation-check \
+            --no-variable_scope-check \
+            --no-autoloader_layout-check \
+            --no-case_without_default-check \
+            --no-names_containing_dash-check \
+            --no-variable_contains_dash-check \
+            --no-variables_not_enclosed-check \
+            --no-selector_inside_resource-check \
+            --no-class_inherits_from_params_class-check \
+            --no-nested_classes_or_defines-check ${j} || exit 1
+    done
+    echo "Puppet style guidelines ok"
+else
+    echo "Puppet manifest has not been changed"
+fi
+
+exit 0

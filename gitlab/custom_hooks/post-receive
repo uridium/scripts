@@ -1,0 +1,10 @@
+#!/bin/bash
+
+echo "===== post-receive hook ====="
+
+input=$(cat)
+branch=$(echo $input | awk '{print $3}')
+
+if [[ "$branch" == "refs/heads/master" ]]; then
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=quiet puppet-hooks@domain.com /d0/puppet-hooks/puppet-update"
+fi
