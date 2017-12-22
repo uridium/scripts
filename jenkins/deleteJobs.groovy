@@ -1,11 +1,13 @@
 import jenkins.model.*
 
-def jobsToDelete = Jenkins.instance.items.findAll { job ->
-    job.name =~ /regexp/
+def jobsToDelete = Jenkins.instance.items.findAll {
+    it.name =~ /regexp/
 }
 
-jobsToDelete.each { job ->
-    print "${job.name}:  "
-    job.delete()
-    println "Deleted"
+jobsToDelete.each {
+    print "${it.name}:  "
+    it.delete()
+    println "deleted"
 }
+
+println "\n${jobsToDelete.size()} elements deleted"

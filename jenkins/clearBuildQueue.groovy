@@ -1,12 +1,15 @@
 import jenkins.model.*
 
-def queue = Jenkins.instance.queue
+def elements = Jenkins.instance.queue
 
-println "Number of items in Build Queue: ${queue.items.length}\n"
-
-queue.items.each {
-    println it.task.name
+def jobsToClear = elements.items.findAll {
+    it.task.name =~ /regexp/
 }
 
-queue.clear()
-println "\nQueue cleared"
+jobsToClear.each {
+    print "${it.task.name}:  "
+    elements.cancel(it.task)
+    println "cleared"
+}
+
+println "\n${jobsToClear.size()} elements cleared"
