@@ -1,0 +1,5 @@
+boto
+pyotp
+pyperclip
+python-gnupg
+pyzbar
